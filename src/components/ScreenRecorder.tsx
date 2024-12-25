@@ -1,12 +1,15 @@
 import React, { useState, useRef, useCallback } from 'react';
 import './ScreenRecorder.css';
+import Modal from './Modal';
 
 const ScreenRecorder: React.FC = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(true); // Estado para a modal
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null); // Mensagem de sucesso
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
+  // Combinar streams de vídeo e áudio
   const getCombinedStream = useCallback(async (): Promise<MediaStream> => {
     try {
       const [screenStream, audioStream] = await Promise.all([
@@ -23,6 +26,7 @@ const ScreenRecorder: React.FC = () => {
     }
   }, []);
 
+  // Inicia a gravação
   const startRecording = useCallback(async () => {
     try {
       const combinedStream = await getCombinedStream();
@@ -42,11 +46,13 @@ const ScreenRecorder: React.FC = () => {
     }
   }, [getCombinedStream]);
 
+  // Para a gravação
   const stopRecording = useCallback(() => {
     mediaRecorderRef.current?.stop();
     setIsRecording(false);
   }, []);
 
+  // Faz o download do arquivo e exibe mensagem de sucesso
   const downloadRecording = useCallback(() => {
     if (recordedChunks.length === 0) return;
 
@@ -60,29 +66,22 @@ const ScreenRecorder: React.FC = () => {
 
     URL.revokeObjectURL(url);
     setRecordedChunks([]);
+    setSuccessMessage('Arquivo salvo com sucesso!');
+    setTimeout(() => setSuccessMessage(null), 3000); // Mensagem desaparece após 3 segundos
   }, [recordedChunks]);
 
+  // Fecha o modal
   const closeModal = () => {
-    setIsModalOpen(false); // Fecha a modal quando o usuário clicar em "Começar"
+    setIsModalOpen(false);
   };
 
   return (
     <div className="screen-recorder-container">
-      <h1>Screen Recorder</h1>
+      <div className='top'>Screen Recorder</div>
       
-      {/* Modal informando sobre o processo */}
-      {isModalOpen && (
-        <div className="modal">
-          <div className="modal-content">
-            <h2>Selecione a Tela ou Janela</h2>
-            <p>
-              Para começar a gravação, você precisará escolher a tela ou janela que deseja compartilhar.
-            </p>
-            <button onClick={closeModal}>Começar</button>
-          </div>
-        </div>
-      )}
-      
+      {/* Modal para selecionar a tela */}
+      <Modal isOpen={isModalOpen} onClose={closeModal} />
+
       <div>
         <button
           onClick={isRecording ? stopRecording : startRecording}
@@ -96,6 +95,11 @@ const ScreenRecorder: React.FC = () => {
           </button>
         )}
       </div>
+
+      {/* Mensagem de sucesso */}
+      {successMessage && (
+        <div className="success-message">{successMessage}</div>
+      )}
     </div>
   );
 };

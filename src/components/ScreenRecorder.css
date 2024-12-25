@@ -24,7 +24,7 @@ body {
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    margin: 10px;
+    margin: 100px;
   }
   
   button:hover {
@@ -55,40 +55,39 @@ body {
     animation: pulse 1s infinite;
   }
 
-  /* Adicionando um estilo para a modal */
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
-  
-  .modal-content {
-    background-color: rgb(128, 70, 70);
-    padding: 20px;
-    border-radius: 8px;
-    text-align: center;
-    max-width: 400px;
-    width: 100%;
-  }
-  
-  .modal button {
-    margin-top: 10px;
-    padding: 10px 20px;
-    background-color: #3498db;
-    color: rgb(78, 33, 33);
-    border: none;
+  .success-message {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #4caf50;
+    color: white;
     border-radius: 5px;
-    cursor: pointer;
+    font-size: 16px;
+    text-align: center;
+    animation: fadeInOut 3s ease;
   }
   
-  .modal button:hover {
-    opacity: 0.8;
+  /* Animação para suavizar a exibição e ocultação */
+  @keyframes fadeInOut {
+    0% {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    10% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    90% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
   }
-  
+
+.top{
+  font-size: 50px;
+
+ 
+}  
