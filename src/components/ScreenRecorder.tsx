@@ -113,7 +113,7 @@ const ScreenRecorder: React.FC = () => {
         )}
 
         
-        {isLoading && <div className="spinner">Carregando...</div>}
+        {isLoading && <div className="spinner">.</div>}
       </div>
 
       {successMessage && <div className="success-message">{successMessage}</div>}
