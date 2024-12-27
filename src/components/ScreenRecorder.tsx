@@ -7,6 +7,7 @@ const ScreenRecorder: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(true);
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
   const getCombinedStream = useCallback(async (): Promise<MediaStream> => {
@@ -49,13 +50,15 @@ const ScreenRecorder: React.FC = () => {
     setIsRecording(false);
   }, []);
 
-  // Função para enviar o arquivo para o backend
+ 
   const handleFileUpload = async () => {
     if (recordedChunks.length === 0) return;
 
     const blob = new Blob(recordedChunks, { type: 'video/webm' });
     const formData = new FormData();
-    formData.append('video', blob, 'recorded-video.webm'); // Adiciona o arquivo ao FormData
+    formData.append('video', blob, 'recorded-video.webm'); 
+
+    setIsLoading(true); 
 
     try {
       const response = await fetch('https://screen-recorder-backend.onrender.com/upload', {
@@ -72,7 +75,7 @@ const ScreenRecorder: React.FC = () => {
 
         setSuccessMessage('Arquivo pronto para download!');
         setTimeout(() => {
-          setSuccessMessage(null); // Remove a mensagem após 2 segundos
+          setSuccessMessage(null); 
         }, 2500);
       } else {
         throw new Error('Erro ao enviar o arquivo');
@@ -80,6 +83,8 @@ const ScreenRecorder: React.FC = () => {
     } catch (error) {
       console.error('Erro no upload:', error);
       setSuccessMessage('Erro ao enviar o arquivo');
+    } finally {
+      setIsLoading(false); 
     }
   };
 
@@ -101,11 +106,14 @@ const ScreenRecorder: React.FC = () => {
           {isRecording ? '🛑Stop Recording' : '▶️Start Recording'}
         </button>
 
-        {recordedChunks.length > 0 && (
+        {recordedChunks.length > 0 && !isLoading && (
           <button onClick={handleFileUpload} className="upload-btn">
             Save Video
           </button>
         )}
+
+        
+        {isLoading && <div className="spinner">Carregando...</div>}
       </div>
 
       {successMessage && <div className="success-message">{successMessage}</div>}
