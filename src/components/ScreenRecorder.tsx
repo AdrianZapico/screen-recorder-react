@@ -4,12 +4,11 @@ import Modal from './Modal';
 
 const ScreenRecorder: React.FC = () => {
   const [isRecording, setIsRecording] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(true); // Estado para a modal
+  const [isModalOpen, setIsModalOpen] = useState(true);
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null); // Mensagem de sucesso
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
-  // Combinar streams de vídeo e áudio
   const getCombinedStream = useCallback(async (): Promise<MediaStream> => {
     try {
       const [screenStream, audioStream] = await Promise.all([
@@ -26,7 +25,6 @@ const ScreenRecorder: React.FC = () => {
     }
   }, []);
 
-  // Inicia a gravação
   const startRecording = useCallback(async () => {
     try {
       const combinedStream = await getCombinedStream();
@@ -46,40 +44,53 @@ const ScreenRecorder: React.FC = () => {
     }
   }, [getCombinedStream]);
 
-  // Para a gravação
   const stopRecording = useCallback(() => {
     mediaRecorderRef.current?.stop();
     setIsRecording(false);
   }, []);
 
-  // Faz o download do arquivo e exibe mensagem de sucesso
-  const downloadRecording = useCallback(() => {
+  // Função para enviar o arquivo para o backend
+  const handleFileUpload = async () => {
     if (recordedChunks.length === 0) return;
 
     const blob = new Blob(recordedChunks, { type: 'video/webm' });
-    const url = URL.createObjectURL(blob);
+    const formData = new FormData();
+    formData.append('video', blob, 'recorded-video.webm'); // Adiciona o arquivo ao FormData
 
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'screen-recording.webm';
-    link.click();
+    try {
+      const response = await fetch('https://screen-recorder-backend.onrender.com/upload', {
+        method: 'POST',
+        body: formData,
+      });
 
-    URL.revokeObjectURL(url);
-    setRecordedChunks([]);
-    setSuccessMessage('Arquivo salvo com sucesso!');
-    setTimeout(() => setSuccessMessage(null), 3000); // Mensagem desaparece após 3 segundos
-  }, [recordedChunks]);
+      if (response.ok) {
+        const downloadUrl = await response.blob();
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(downloadUrl);
+        link.download = 'converted-video.mp4';
+        link.click();
 
-  // Fecha o modal
+        setSuccessMessage('Arquivo pronto para download!');
+        setTimeout(() => {
+          setSuccessMessage(null); // Remove a mensagem após 2 segundos
+        }, 2500);
+      } else {
+        throw new Error('Erro ao enviar o arquivo');
+      }
+    } catch (error) {
+      console.error('Erro no upload:', error);
+      setSuccessMessage('Erro ao enviar o arquivo');
+    }
+  };
+
   const closeModal = () => {
     setIsModalOpen(false);
   };
 
   return (
     <div className="screen-recorder-container">
-      <div className='top'>Screen Recorder</div>
-      
-      {/* Modal para selecionar a tela */}
+      <div className="top">Screen Recorder</div>
+
       <Modal isOpen={isModalOpen} onClose={closeModal} />
 
       <div>
@@ -87,19 +98,17 @@ const ScreenRecorder: React.FC = () => {
           onClick={isRecording ? stopRecording : startRecording}
           className={`recording-btn ${isRecording ? 'stop' : 'start'}`}
         >
-          {isRecording ? 'Stop Recording' : 'Start Recording'}
+          {isRecording ? '🛑Stop Recording' : '▶️Start Recording'}
         </button>
+
         {recordedChunks.length > 0 && (
-          <button onClick={downloadRecording} className="download-btn">
-            Download Recording
+          <button onClick={handleFileUpload} className="upload-btn">
+            Save Video
           </button>
         )}
       </div>
 
-      {/* Mensagem de sucesso */}
-      {successMessage && (
-        <div className="success-message">{successMessage}</div>
-      )}
+      {successMessage && <div className="success-message">{successMessage}</div>}
     </div>
   );
 };

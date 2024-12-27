@@ -1,5 +1,5 @@
 import React from 'react';
-import './Modal.css'; // Opcional, para estilos do modal
+import './Modal.css';
 
 interface ModalProps {
   isOpen: boolean;
@@ -7,7 +7,7 @@ interface ModalProps {
 }
 
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
-  if (!isOpen) return null; // Não renderiza nada se não estiver aberto
+  if (!isOpen) return null; 
 
   return (
     <div className="modal">
