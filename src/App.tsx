@@ -1,5 +1,5 @@
 import React from 'react';
-import ScreenRecorder from './components/ScreenRecorder';
+import ScreenRecorder from './components/ScreenRecorder/ScreenRecorder';
 
 const App: React.FC = () => {
   return (
